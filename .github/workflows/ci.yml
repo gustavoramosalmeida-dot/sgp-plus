@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sgp_plus_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        working-directory: apps/api
+        run: |
+          pip install -e .
+          pip install pytest httpx
+      
+      - name: Run lint
+        working-directory: apps/api
+        run: |
+          pip install ruff
+          ruff check .
+      
+      - name: Run tests
+        working-directory: apps/api
+        env:
+          DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/sgp_plus_test
+          SGP_PLUS_ENV: des
+          COOKIE_NAME: sgp_plus_session
+          COOKIE_SECURE: false
+          COOKIE_SAMESITE: lax
+          COOKIE_PATH: /
+          SESSION_TTL_MINUTES: 720
+          CORS_ORIGINS: '["http://localhost:5173"]'
+        run: |
+          alembic upgrade head
+          pytest -v
+
+  frontend:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        working-directory: apps/web
+        run: npm ci
+      
+      - name: Build
+        working-directory: apps/web
+        run: npm run build

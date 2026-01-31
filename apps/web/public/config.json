@@ -1,0 +1,5 @@
+{
+  "env": "DES",
+  "apiBaseUrl": "http://localhost:8000",
+  "showEnvBadge": true
+}

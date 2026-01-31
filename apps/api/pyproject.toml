@@ -1,0 +1,42 @@
+[project]
+name = "sgp-plus-api"
+version = "0.1.0"
+description = "SGP+ API Backend"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "sqlalchemy>=2.0.0",
+    "alembic>=1.12.0",
+    "psycopg[binary]>=3.1.0",
+    "pydantic-settings>=2.0.0",
+    "passlib[bcrypt]==1.7.4",
+    "bcrypt>=4.3.0,<5",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "httpx>=0.25.0",
+    "ruff>=0.1.0",
+]
+
+[build-system]
+requires = ["hatchling>=1.22", "editables>=0.5"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sgp_plus"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/sgp_plus", "alembic", "alembic.ini", "pyproject.toml", "README.md"]
+
+
